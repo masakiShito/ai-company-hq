@@ -36,7 +36,7 @@ PM: 竹中官兵衛（Claude Code）       レビュアー: 大岡三成（Claud
 
 ```bash
 bash scripts/setup-labels.sh     # ラベル作成
-claude                           # Claude Code 起動。/mcp で codex が connected か確認
+claude                           # Claude Code 起動
 ```
 
 Claude Code の中で：
@@ -66,7 +66,7 @@ docs/requirements/            社長が書く要件書
 characters/                   社員名簿（社内報の語り口）
 company.config.json           社内報の対象リポジトリ
 .claude/                      subagent・コマンド・権限設定
-.mcp.json                     Codex を MCP サーバーとして登録
+scripts/codex-run.sh          エンジニア（Codex）への依頼窓口。ログは logs/codex/
 scripts/setup-labels.sh       ラベル作成
 issues/                       発行済みの日報・社内報（AI社員が作る）
 ```

@@ -11,7 +11,7 @@
 |------|------|------|
 | 社長 | 人間 | 要件を書く / 質問に答える / 最終マージ判断 |
 | PM | Claude Code (`pm` subagent) | 要件定義・タスク分解・Issue管理・Codexへの指示 |
-| エンジニア | Codex（MCP `codex` ツール） | 実装・テスト・PR作成 |
+| エンジニア | Codex（`scripts/codex-run.sh` 経由の `codex exec`） | 実装・テスト・PR作成 |
 | レビュアー | Claude Code (`reviewer` subagent) | PRレビュー・差し戻し・承認 |
 
 ## ワークフロー
@@ -30,6 +30,7 @@
 - **差し戻しは最大3回。** 3回で解決しなければ `status:escalated` を付けて停止し、社長に報告
 - 1 Issue = 1 PR = 1 worktree。Issue は半日〜1日で終わる粒度に分割する
 - 依存関係のある Issue は本文に `Depends on #N` を書き、依存先の PR がマージされる（Issue が close される）まで着手しない。未マージのコードは origin/main から切った worktree に含まれないため
+- **Codex の代わりを務めない。** Codex が動かない（認証切れ・エラー等）ときに、`claude -p` や自分で実装して代行してはならない。Issue に状況をコメントして停止し、社長に報告する
 - **記録を残す。** Issue・PR・レビューのやり取りは社内報の一次資料になる。判断の理由はコメントに書き、口頭（会話内）だけで済ませない
 
 ## ラベル
@@ -47,4 +48,5 @@ Codex は会話の文脈を持たない。毎回、以下を含む**自己完結
 - 完了条件：テストが通ること、PR を作成すること
 - 差し戻し時は、レビュー指摘を箇条書きで全文渡す
 
-呼び出し時の設定：`sandbox: workspace-write`、`approval-policy: never`、`cwd: <worktree>`
+呼び出しは必ず `scripts/codex-run.sh <issue番号> <worktree> <指示ファイル>` で行う（詳細は `.claude/agents/pm.md`）。
+指示ファイルは `logs/codex/prompt-<issue番号>.md` に書く。ログは `logs/codex/` に残る
