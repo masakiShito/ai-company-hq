@@ -6,3 +6,6 @@ dist/
 data/raw/
 *.log
 .DS_Store
+
+logs/
+.claude/settings.local.json

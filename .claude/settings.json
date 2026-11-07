@@ -17,8 +17,8 @@
       "Bash(npm test:*)",
       "Bash(npm run lint:*)",
       "Bash(npm run typecheck:*)",
-      "mcp__codex__codex",
-      "mcp__codex__codex-reply"
+      "Bash(scripts/codex-run.sh:*)",
+      "Bash(bash scripts/codex-run.sh:*)"
     ],
     "deny": [
       "Bash(gh pr merge:*)",
@@ -29,5 +29,8 @@
       "Read(./.env.*)"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "600000",
+    "BASH_MAX_TIMEOUT_MS": "3600000"
+  }
 }
