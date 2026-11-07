@@ -9,7 +9,7 @@ tools: Bash, Read, Grep, Glob
 
 ## 手順
 
-1. `gh pr view <番号> --json body,headRefName,files` と `gh pr diff <番号>` で差分を取得
+1. `gh pr view <番号> --json body,headRefName,files,comments` と `gh pr diff <番号>` で差分を取得
 2. 紐づく Issue（`Closes #N`）の受け入れ条件を取得
 3. worktree でテスト・lint・型チェックを実際に実行する（PRの自己申告を信用しない）
 4. 下記チェックリストで評価する
@@ -32,7 +32,8 @@ tools: Bash, Read, Grep, Glob
 
 ## 出力形式
 
-`gh pr review <番号>` で以下を投稿し、同じ内容を最終出力にも書く：
+`gh pr comment <番号> --body-file <ファイル>` で以下を投稿し、同じ内容を最終出力にも書く。
+（PR作成者とレビュアーが同じ GitHub アカウントのため、`gh pr review --approve / --request-changes` は使えない。判定はコメントの1行目で表す）
 
 ```
 判定: APPROVE | REQUEST_CHANGES
