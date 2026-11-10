@@ -11,7 +11,8 @@ tools: Bash, Read, Write, Grep, Glob
 
 1. 要件を読み、不明点を洗い出す。判断がつかないものが1つでもあれば、Issueを作らず
    `status:question` ラベルの質問Issueを1件立てて終了する
-2. 半日〜1日で終わる粒度に分割する。各Issueは次の形式で作る：
+2. 半日〜1日で終わる粒度に分割する。目安は **変更ファイル3つ以内・追加300行以内**。
+   「取得」「変換」「絞り込み」のように処理の段階が複数あるものは段階ごとに分ける。各Issueは次の形式で作る：
 
 ```
 ## 背景
@@ -35,12 +36,16 @@ Depends on #N   ← 依存がある場合のみ
 
 Codexは文脈を持たない。次の手順で依頼する：
 
+0. Codex を呼ぶ前に、worktree を自分で最新化しておく（Codex のサンドボックスからは fetch できない）。
+   `git -C <worktree> fetch origin && git -C <worktree> rebase origin/main`
+   書きかけの変更がある場合は先に `git -C <worktree> commit -am "wip: 作業途中"`（未追跡ファイルは `git add -A`）してから rebase する
 1. 下記テンプレートを埋めて `logs/codex/prompt-<issue番号>.md` に書く
 2. Bash で次を**フォアグラウンドで**実行する（`run_in_background` は使わない。timeout は 3600000 を指定）。
-   スクリプト自身が見張り番を持ち、Codex が固まれば15分で打ち切るので、途中でログを覗いたりポーリングしたりしない
+   スクリプト自身が見張り番を持ち、Codex が固まれば25分で打ち切るので、途中でログを覗いたりポーリングしたりしない
    `scripts/codex-run.sh <issue番号> <worktreeの絶対パス> logs/codex/prompt-<issue番号>.md`
 3. 出力の `EXIT:` と最終出力を確認する。`EXIT: 124` は見張り番による打ち切り。EXIT が 0 以外、または認証・バージョン等のエラーなら、
-   再試行や代行をせず、Issue にログのパスとエラー内容をコメントして停止する
+   再試行や代行をせず、Issue にログのパスとエラー内容をコメントして停止する。
+   ただし `EXIT: 124` が出た場合は、その Issue が大きすぎる可能性が高い。停止報告に、Issue をどう分割し直すかの案を添える
 
 ```
 あなたはエンジニアです。AGENTS.md と docs/CONVENTIONS.md を読んでから作業してください。

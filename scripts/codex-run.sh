@@ -4,8 +4,10 @@
 # ログは logs/codex/ に残る（社内報の一次資料）。
 #
 # 見張り番：Codex が固まったら自動で打ち切る（exit 124）
-#   CODEX_IDLE_TIMEOUT_SEC  ログが更新されないまま待つ上限（既定 900 秒＝15分）
+#   CODEX_IDLE_TIMEOUT_SEC  ログが更新されないまま待つ上限（既定 1500 秒＝25分）
+#     Codex は大きなファイルを書き終えるまでログに何も出さないため、短すぎると作業中に打ち切ってしまう
 #   CODEX_TOTAL_TIMEOUT_SEC 全体の上限（既定 3000 秒＝50分）
+#   CODEX_EFFORT            推論の深さ（既定 medium）。~/.codex/config.toml の設定より優先する
 set -uo pipefail
 
 if [ $# -ne 3 ]; then
@@ -20,7 +22,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG_DIR="$ROOT/logs/codex"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/issue-${ISSUE}-$(date +%Y%m%d-%H%M%S).log"
-IDLE_LIMIT="${CODEX_IDLE_TIMEOUT_SEC:-900}"
+IDLE_LIMIT="${CODEX_IDLE_TIMEOUT_SEC:-1500}"
+EFFORT="${CODEX_EFFORT:-medium}"
 TOTAL_LIMIT="${CODEX_TOTAL_TIMEOUT_SEC:-3000}"
 
 [ -d "$WT" ] || { echo "worktree が見つかりません: $WT" >&2; exit 2; }
@@ -35,6 +38,7 @@ codex exec \
   --sandbox workspace-write \
   --add-dir "$ROOT/.git" \
   -c sandbox_workspace_write.network_access=true \
+  -c model_reasoning_effort="$EFFORT" \
   "$(cat "$PROMPT_FILE")" < /dev/null > "$LOG" 2>&1 &
 PID=$!
 set +m
