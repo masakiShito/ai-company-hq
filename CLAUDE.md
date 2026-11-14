@@ -9,7 +9,7 @@
 
 | 役割 | 担当 | 責務 |
 |------|------|------|
-| 社長 | 人間 | 要件を書く / 質問に答える / 最終マージ判断 |
+| 社長 | 人間 | 要件を書く / `status:question`・`status:escalated` に答える |
 | PM | Claude Code (`pm` subagent) | 要件定義・タスク分解・Issue管理・Codexへの指示 |
 | エンジニア | Codex（`scripts/codex-run.sh` 経由の `codex exec`） | 実装・テスト・PR作成 |
 | レビュアー | Claude Code (`reviewer` subagent) | PRレビュー・差し戻し・承認 |
@@ -18,15 +18,18 @@
 
 1. `/kickoff <要件 or 要件書のパス>` — 要件を分解し、GitHub Issue を作成（ラベル `status:todo`）
 2. `/dev <issue番号>` — Codex に実装させ PR を作る（`status:in-progress` → `status:review`）
-3. `/review <PR番号>` — レビュー。OKなら `status:approved`、NGなら差し戻し
+3. `/review <PR番号>` — レビュー。OKなら PM がマージして Issue を close、NGなら差し戻し
 4. `/run [件数]` — 上記を `status:todo` の Issue がなくなるまで自動で回す
-5. 社長が `status:approved` の PR をマージ
+5. マージ後は社長に確認せず、次の Issue へそのまま進む
 
 ## 絶対ルール
 
 - **要件が曖昧なら実装に進まない。** `status:question` ラベルで質問 Issue を立て、社長の回答を待つ
 - **自分で実装コードを書かない。** 実装は Codex に依頼する（設定ファイル・ドキュメントの軽微な修正は除く）
-- **main への push・マージは禁止。** マージは社長だけが行う
+- **社長に確認を求めない。** 1件終わるたびに「次に進みますか？」「マージ後に〜します」と聞いて待たない。
+  止まってよいのは次のときだけ：`status:question` / `status:escalated` / 同じエラーが2回続いた / 着手できる todo がない
+- **マージは PM が行う。** 条件は「レビュアーが APPROVE」かつ「worktree でテスト・lint・型チェックが通る」かつ「CI がある場合は全て green」。
+  `gh pr merge <PR番号> --squash --delete-branch` で行う。main への直接 push・force push は禁止
 - **差し戻しは最大3回。** 3回で解決しなければ `status:escalated` を付けて停止し、社長に報告
 - 1 Issue = 1 PR = 1 worktree。Issue は半日〜1日で終わる粒度に分割する
 - 依存関係のある Issue は本文に `Depends on #N` を書き、依存先の PR がマージされる（Issue が close される）まで着手しない。未マージのコードは origin/main から切った worktree に含まれないため
