@@ -13,6 +13,7 @@ export const CompanyConfigSchema = z
   .object({
     name: z.string().min(1),
     timezone: z.literal('Asia/Tokyo'),
+    autonomousSince: z.iso.datetime({ offset: true }).optional(),
     repos: z.array(RepositorySchema).min(1),
   })
   .strict();

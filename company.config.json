@@ -1,5 +1,6 @@
 {
   "name": "AI Company",
   "timezone": "Asia/Tokyo",
+  "autonomousSince": "2026-11-08T07:49:28Z",
   "repos": ["masakiShito/ai-company-hq"]
 }
