@@ -3,10 +3,15 @@ import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
 
 import { runDaily, type DailyDependencies } from './daily.js';
+import { runMonthly } from './monthly.js';
 
-const CliArgumentsSchema = z
-  .tuple([z.literal('daily'), z.iso.date()])
-  .rest(z.literal('--dry-run'));
+const MonthSchema = z
+  .string()
+  .regex(/^\d{4}-(?:0[1-9]|1[0-2])$/u, 'month must use YYYY-MM format');
+const CliArgumentsSchema = z.union([
+  z.tuple([z.literal('daily'), z.iso.date()]).rest(z.literal('--dry-run')),
+  z.tuple([z.literal('monthly'), MonthSchema]).rest(z.literal('--dry-run')),
+]);
 
 export async function runCli(
   args: readonly string[],
@@ -16,11 +21,12 @@ export async function runCli(
 ): Promise<number> {
   try {
     const parsed = CliArgumentsSchema.parse(args);
-    await runDaily(
-      parsed[1],
-      { dryRun: parsed.slice(2).includes('--dry-run') },
-      dependencies,
-    );
+    const options = { dryRun: parsed.slice(2).includes('--dry-run') };
+    if (parsed[0] === 'daily') {
+      await runDaily(parsed[1], options, dependencies);
+    } else {
+      await runMonthly(parsed[1], options, dependencies);
+    }
     return 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
