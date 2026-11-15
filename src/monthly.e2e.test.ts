@@ -48,6 +48,62 @@ const pullRequests = [
   },
 ];
 
+const november2026PullRequests = [
+  ...[
+    {
+      number: 10,
+      title: 'chore: 秀吉への依頼を codex exec に改める',
+      createdAt: '2026-11-07T12:01:44Z',
+      mergedAt: '2026-11-07T12:01:48Z',
+      headRef: 'chore/codex-exec',
+    },
+    {
+      number: 12,
+      title: 'chore: 秀吉に見張り番を付ける',
+      createdAt: '2026-11-07T23:55:33Z',
+      mergedAt: '2026-11-07T23:55:37Z',
+      headRef: 'chore/codex-watchdog',
+    },
+    {
+      number: 13,
+      title: 'chore: 秀吉の考え込みすぎを改める',
+      createdAt: '2026-11-10T00:37:30Z',
+      mergedAt: '2026-11-10T00:37:36Z',
+      headRef: 'chore/codex-tuning',
+    },
+    {
+      number: 18,
+      title: 'chore: 自律モード化 — PM がマージまで行う',
+      createdAt: '2026-11-14T06:06:25Z',
+      mergedAt: '2026-11-14T06:10:22Z',
+      headRef: 'chore/autonomous-mode',
+    },
+  ].map(({ number, title, createdAt, mergedAt, headRef }) => ({
+    number,
+    title,
+    state: 'closed',
+    created_at: createdAt,
+    closed_at: mergedAt,
+    merged_at: mergedAt,
+    user: { login: 'company-owner' },
+    merged_by: { login: 'company-owner' },
+    head: { ref: headRef },
+    labels: [],
+  })),
+  {
+    number: 11,
+    title: 'chore: プロジェクト基盤をセットアップ',
+    state: 'closed',
+    created_at: '2026-11-07T12:09:28Z',
+    closed_at: '2026-11-07T12:18:04Z',
+    merged_at: '2026-11-07T12:18:04Z',
+    user: { login: 'engineer' },
+    merged_by: { login: 'company-owner' },
+    head: { ref: 'feat/1-project-setup' },
+    labels: [],
+  },
+];
+
 function createGitHubMock(): GhApiClient {
   return {
     api: vi.fn<GhApiClient['api']>(async (endpoint) => {
@@ -56,6 +112,31 @@ function createGitHubMock(): GhApiClient {
       if (endpoint.includes('issues/comments')) return [];
       if (endpoint.includes('pulls/comments')) return [];
       if (endpoint.includes('pulls/9/reviews')) return [];
+      if (endpoint.includes('/timeline')) return [];
+      throw new Error(`Unexpected gh api endpoint: ${endpoint}`);
+    }),
+  };
+}
+
+function createNovember2026GitHubMock(): GhApiClient {
+  return {
+    api: vi.fn<GhApiClient['api']>(async (endpoint) => {
+      if (endpoint.includes('issues?state=all')) return [];
+      if (endpoint.includes('pulls?state=all')) {
+        return november2026PullRequests;
+      }
+      if (endpoint.includes('issues/comments')) {
+        return [
+          {
+            issue_url: `https://api.github.com/repos/${repository}/issues/11`,
+            created_at: '2026-11-07T12:14:47Z',
+            user: { login: 'company-owner' },
+            body: '判定: APPROVE\n\n必須の指摘なし',
+          },
+        ];
+      }
+      if (endpoint.includes('pulls/comments')) return [];
+      if (endpoint.includes('/reviews')) return [];
       if (endpoint.includes('/timeline')) return [];
       throw new Error(`Unexpected gh api endpoint: ${endpoint}`);
     }),
@@ -151,6 +232,41 @@ describe('monthly CLI E2E', () => {
     expect(buildMonthlyMetricsTable(facts)).toContain(
       '| 作成 Issue 数 | 1件 |',
     );
+  });
+
+  it('reports president and reviewer activity from November 2026 data in dry-run mode', async () => {
+    const output: string[] = [];
+
+    const exitCode = await runCli(['monthly', '2026-11', '--dry-run'], {
+      configPath,
+      githubClient: createNovember2026GitHubMock(),
+      cache: createMemoryCache(),
+      output: (contents) => output.push(contents),
+    });
+
+    expect(exitCode).toBe(0);
+    const facts = FactsSchema.parse(JSON.parse(output.join('')));
+    const reviewer = facts.employeeActivities.find(
+      ({ role }) => role === 'reviewer',
+    );
+    const president = facts.employeeActivities.find(
+      ({ role }) => role === 'president',
+    );
+
+    expect(reviewer).toMatchObject({
+      name: '大岡三成',
+      role: 'reviewer',
+    });
+    expect(reviewer?.summary).not.toBe('今月の活動なし');
+    expect(president).toMatchObject({
+      name: '織田家康',
+      role: 'president',
+    });
+    expect(president?.summary).not.toBe('今月の活動なし');
+    for (const number of [10, 12, 13, 18]) {
+      expect(president?.summary).toContain(`#${number}`);
+    }
+    expect(facts.metrics.firstReviewApprovalRate).toBeGreaterThan(0);
   });
 
   it('returns exit code 1 when report validation repeatedly fails', async () => {
