@@ -23,6 +23,7 @@ function subjectKey(event: NormalizedEvent): string {
 export function extractEventCandidates(
   events: readonly NormalizedEvent[],
   period: MetricsPeriod,
+  autonomousSince?: string,
 ): EventCandidate[] {
   const start = Date.parse(period.start);
   const end = Date.parse(period.end);
@@ -55,7 +56,7 @@ export function extractEventCandidates(
         number: event.number,
         title: event.title,
         timestamp: event.timestamp,
-        speaker: classifySpeaker(event),
+        speaker: classifySpeaker(event, autonomousSince),
       });
     } else if (event.type === 'pr_merged') {
       candidates.push({
@@ -64,7 +65,7 @@ export function extractEventCandidates(
         number: event.number,
         title: event.title,
         timestamp: event.timestamp,
-        speaker: classifySpeaker(event),
+        speaker: classifySpeaker(event, autonomousSince),
       });
     }
   }
@@ -100,7 +101,7 @@ export function extractEventCandidates(
       number: last.number,
       title: last.title,
       timestamp: last.timestamp,
-      speaker: classifySpeaker(last),
+      speaker: classifySpeaker(last, autonomousSince),
       changesRequestedCount: count,
     });
   }

@@ -93,10 +93,13 @@ function describeEvent(event: NormalizedEvent): string {
 export function buildEmployeeActivities(
   events: readonly NormalizedEvent[],
   noActivitySummary = '本日の活動なし',
+  autonomousSince?: string,
 ): EmployeeActivity[] {
   return EMPLOYEES.map((employee) => {
     const summaries = events
-      .filter((event) => classifySpeaker(event) === employee.role)
+      .filter(
+        (event) => classifySpeaker(event, autonomousSince) === employee.role,
+      )
       .map(describeEvent);
 
     return {
@@ -186,10 +189,18 @@ export async function runDaily(
   const facts = buildFacts({
     period: { kind: 'daily', date },
     metrics: calculateMetrics(events, period),
-    eventCandidates: extractEventCandidates(events, period),
+    eventCandidates: extractEventCandidates(
+      events,
+      period,
+      config.autonomousSince,
+    ),
     issues: referencesFor(dailyEvents, 'issue'),
     pullRequests: referencesFor(dailyEvents, 'pull_request'),
-    employeeActivities: buildEmployeeActivities(dailyEvents),
+    employeeActivities: buildEmployeeActivities(
+      dailyEvents,
+      '本日の活動なし',
+      config.autonomousSince,
+    ),
   });
 
   if (options.dryRun) {

@@ -85,12 +85,17 @@ export async function runMonthly(
   const facts = buildFacts({
     period: { kind: 'monthly', month },
     metrics: calculateMetrics(events, period),
-    eventCandidates: extractEventCandidates(events, period),
+    eventCandidates: extractEventCandidates(
+      events,
+      period,
+      config.autonomousSince,
+    ),
     issues: referencesFor(monthlyEvents, 'issue'),
     pullRequests: referencesFor(monthlyEvents, 'pull_request'),
     employeeActivities: buildEmployeeActivities(
       monthlyEvents,
       '今月の活動なし',
+      config.autonomousSince,
     ),
   });
 
