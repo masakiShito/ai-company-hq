@@ -21,6 +21,7 @@ export const GitHubIssueSchema = z
   .object({
     number: z.number().int().positive(),
     title: z.string(),
+    body: z.string().nullable().optional(),
     state: z.enum(['open', 'closed']),
     created_at: GitHubTimestampSchema,
     closed_at: GitHubTimestampSchema.nullable(),
@@ -35,6 +36,7 @@ export const GitHubPullRequestSchema = z
   .object({
     number: z.number().int().positive(),
     title: z.string(),
+    body: z.string().nullable().optional(),
     state: z.enum(['open', 'closed']),
     created_at: GitHubTimestampSchema,
     closed_at: GitHubTimestampSchema.nullable(),
@@ -93,6 +95,7 @@ export const NormalizedEventSchema = z.union([
   EventCommonSchema.extend({
     type: z.literal('issue_created'),
     subject: z.literal('issue'),
+    body: z.string().optional(),
   }),
   EventCommonSchema.extend({
     type: z.literal('issue_closed'),
@@ -101,6 +104,7 @@ export const NormalizedEventSchema = z.union([
   EventCommonSchema.extend({
     type: z.literal('pr_created'),
     subject: z.literal('pull_request'),
+    body: z.string().optional(),
   }),
   EventCommonSchema.extend({
     type: z.literal('pr_merged'),

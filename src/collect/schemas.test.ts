@@ -17,6 +17,7 @@ const githubCases = [
     value: {
       number: 12,
       title: 'Fix reporting',
+      body: 'Issue details',
       state: 'closed',
       created_at: '2026-05-01T00:00:00Z',
       closed_at: '2026-05-02T00:00:00Z',
@@ -32,6 +33,7 @@ const githubCases = [
     value: {
       number: 13,
       title: 'Add reporting',
+      body: 'Pull request details',
       state: 'closed',
       created_at: '2026-05-01T00:00:00+09:00',
       closed_at: '2026-05-02T00:00:00+09:00',
@@ -92,9 +94,19 @@ const commonEvent = {
 };
 
 const normalizedEvents = [
-  { ...commonEvent, type: 'issue_created', subject: 'issue' },
+  {
+    ...commonEvent,
+    type: 'issue_created',
+    subject: 'issue',
+    body: 'Issue details',
+  },
   { ...commonEvent, type: 'issue_closed', subject: 'issue' },
-  { ...commonEvent, type: 'pr_created', subject: 'pull_request' },
+  {
+    ...commonEvent,
+    type: 'pr_created',
+    subject: 'pull_request',
+    body: 'Pull request details',
+  },
   { ...commonEvent, type: 'pr_merged', subject: 'pull_request' },
   {
     ...commonEvent,
