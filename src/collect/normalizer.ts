@@ -92,6 +92,7 @@ export function normalizeGitHubData(
       actor: actorLogin(issue.user),
       ...subject,
       type: 'issue_created',
+      body: issue.body ?? '',
     });
 
     if (issue.closed_at !== null) {
@@ -118,6 +119,7 @@ export function normalizeGitHubData(
       actor: actorLogin(pullRequest.user),
       ...subject,
       type: 'pr_created',
+      body: pullRequest.body ?? '',
     });
 
     if (pullRequest.merged_at !== null) {

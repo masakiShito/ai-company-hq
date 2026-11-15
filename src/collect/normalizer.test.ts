@@ -10,6 +10,7 @@ function rawData(): GitHubRawData {
       {
         number: 1,
         title: 'Fix a bug',
+        body: 'Bug details <!-- ai-company:actor=pm -->',
         state: 'closed',
         created_at: '2026-11-03T00:00:00Z',
         closed_at: '2026-11-09T00:00:00Z',
@@ -22,6 +23,7 @@ function rawData(): GitHubRawData {
       {
         number: 2,
         title: 'Add a feature',
+        body: 'Feature details <!-- ai-company:actor=engineer -->',
         state: 'closed',
         created_at: '2026-11-01T00:00:00Z',
         closed_at: '2026-11-08T00:00:00Z',
@@ -107,6 +109,18 @@ describe('normalizeGitHubData', () => {
       subject: 'issue',
       type: 'issue_closed',
     });
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        type: 'issue_created',
+        body: 'Bug details <!-- ai-company:actor=pm -->',
+      }),
+    );
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        type: 'pr_created',
+        body: 'Feature details <!-- ai-company:actor=engineer -->',
+      }),
+    );
     expect(events).toContainEqual(
       expect.objectContaining({
         type: 'pr_merged',

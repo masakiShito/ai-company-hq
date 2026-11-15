@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { NormalizedEvent } from '../collect/schemas.js';
 
-import { classifySpeaker } from './speaker.js';
+import { classifySpeaker, parseActorMarker } from './speaker.js';
 
 const common = {
   repository: 'octo/example',
@@ -11,6 +11,27 @@ const common = {
   number: 1,
   title: 'Work item',
 };
+
+describe('parseActorMarker', () => {
+  it.each([
+    ['pm', 'Issue details\n\n<!-- ai-company:actor=pm -->'],
+    ['engineer', '<!-- ai-company:actor=engineer -->'],
+    ['reviewer', 'Review details<!-- ai-company:actor=reviewer -->\n'],
+  ] as const)(
+    'returns %s from a marker at the end of the body',
+    (actor, body) => {
+      expect(parseActorMarker(body)).toBe(actor);
+    },
+  );
+
+  it.each([
+    'no marker',
+    '<!-- ai-company:actor=organization -->',
+    '<!-- ai-company:actor=pm --> trailing text',
+  ])('returns null for %j', (body) => {
+    expect(parseActorMarker(body)).toBeNull();
+  });
+});
 
 describe('classifySpeaker', () => {
   it.each([
