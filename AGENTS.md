@@ -12,6 +12,11 @@
 5. Conventional Commits でコミットする
 6. `gh pr create` で PR を作成する。本文は `.github/pull_request_template.md` に従い、`Closes #<issue番号>` を含める
 
+## 作成者マーカー
+
+エンジニアが作成する Issue・PR・コメントは、本文末尾に `<!-- ai-company:actor=engineer -->` を付ける。
+マーカーのないものは社長が作成したものとみなす。
+
 ## 禁止事項
 
 - main ブランチへの push、PR のマージ

@@ -27,6 +27,16 @@
 - コミット：Conventional Commits（`feat:` `fix:` `test:` `refactor:` `docs:` `chore:`）
 - worktree：`../wt/<issue番号>`
 
+## 作成者マーカーの形式
+
+PM・エンジニア・レビュアーが作成する Issue・PR・コメントは、本文末尾に次の HTML コメント形式で作成者を記載する。
+
+- PM：`<!-- ai-company:actor=pm -->`
+- エンジニア：`<!-- ai-company:actor=engineer -->`
+- レビュアー：`<!-- ai-company:actor=reviewer -->`
+
+作成者マーカーのない Issue・PR・コメントは、社長が作成したものとみなす。
+
 ## コード規約
 
 - `any` 禁止。外部入力（GitHub API のレスポンス、LLM の出力）は zod で検証する
