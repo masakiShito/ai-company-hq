@@ -30,6 +30,7 @@ describe('loadCompanyConfig', () => {
     const config = {
       name: 'Example Company',
       timezone: 'Asia/Tokyo',
+      autonomousSince: '2026-11-08T07:49:28Z',
       repos: ['octo-org/alpha', 'octo-org/beta.js'],
     };
     const configPath = await writeConfig(config);
@@ -49,6 +50,15 @@ describe('loadCompanyConfig', () => {
     [
       'an empty repository list',
       { name: 'Example', timezone: 'Asia/Tokyo', repos: [] },
+    ],
+    [
+      'an invalid autonomous start datetime',
+      {
+        name: 'Example',
+        timezone: 'Asia/Tokyo',
+        autonomousSince: '2026-11-08 07:49:28',
+        repos: ['a/b'],
+      },
     ],
     [
       'an unknown property',
