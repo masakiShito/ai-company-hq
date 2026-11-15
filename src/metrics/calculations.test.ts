@@ -53,6 +53,22 @@ function review(
   };
 }
 
+function comment(
+  number: number,
+  timestamp: string,
+  body: string,
+): NormalizedEvent {
+  return {
+    ...common,
+    type: 'comment_added',
+    subject: 'pull_request',
+    number,
+    timestamp,
+    commentKind: 'issue',
+    body,
+  };
+}
+
 function label(
   type: 'label_added' | 'label_removed',
   number: number,
@@ -97,14 +113,16 @@ describe('event counts', () => {
 });
 
 describe('calculateFirstReviewApprovalRate', () => {
-  it('divides PRs approved on their first review by all PRs created', () => {
+  it('counts PRs approved in their first decision comment', () => {
     const events = [
       event('pr_created', 1, '2026-05-01T00:00:00Z'),
       event('pr_created', 2, '2026-05-01T00:00:00Z'),
       event('pr_created', 3, '2026-05-01T00:00:00Z'),
-      review(1, '2026-05-02T00:00:00Z', 'APPROVED'),
-      review(2, '2026-05-02T00:00:00Z', 'CHANGES_REQUESTED'),
-      review(2, '2026-05-03T00:00:00Z', 'APPROVED'),
+      comment(1, '2026-05-02T00:00:00Z', '判定: APPROVE\nLooks good'),
+      comment(2, '2026-05-02T00:00:00Z', '判定: REQUEST_CHANGES'),
+      comment(2, '2026-05-03T00:00:00Z', '判定: APPROVE'),
+      review(3, '2026-05-02T00:00:00Z', 'APPROVED'),
+      comment(3, '2026-05-03T00:00:00Z', 'Review complete\n判定: APPROVE'),
     ];
 
     expect(calculateFirstReviewApprovalRate(events, period)).toBe(1 / 3);
@@ -113,13 +131,18 @@ describe('calculateFirstReviewApprovalRate', () => {
 });
 
 describe('calculateAverageChangesRequested', () => {
-  it('calculates changes-requested reviews per PR and returns zero without PRs', () => {
+  it('calculates request-changes decision comments per PR', () => {
     const events = [
       event('pr_created', 1, '2026-05-01T00:00:00Z'),
       event('pr_created', 2, '2026-05-01T00:00:00Z'),
-      review(1, '2026-05-02T00:00:00Z', 'changes_requested'),
-      review(1, '2026-05-03T00:00:00Z', 'CHANGES_REQUESTED'),
-      review(2, '2026-05-04T00:00:00Z', 'APPROVED'),
+      comment(1, '2026-05-02T00:00:00Z', '判定: REQUEST_CHANGES'),
+      comment(
+        1,
+        '2026-05-03T00:00:00Z',
+        '判定: REQUEST_CHANGES\nPlease add a test',
+      ),
+      comment(2, '2026-05-04T00:00:00Z', '判定: APPROVE'),
+      review(2, '2026-05-05T00:00:00Z', 'CHANGES_REQUESTED'),
     ];
 
     expect(calculateAverageChangesRequested(events, period)).toBe(1);

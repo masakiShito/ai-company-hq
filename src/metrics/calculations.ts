@@ -104,6 +104,17 @@ function pullRequestsCreatedInPeriod(
   );
 }
 
+type ReviewDecision = 'APPROVE' | 'REQUEST_CHANGES';
+
+function parseReviewDecision(event: NormalizedEvent): ReviewDecision | null {
+  if (event.type !== 'comment_added') return null;
+
+  const firstLine = event.body.split(/\r?\n/, 1)[0];
+  if (firstLine === '判定: APPROVE') return 'APPROVE';
+  if (firstLine === '判定: REQUEST_CHANGES') return 'REQUEST_CHANGES';
+  return null;
+}
+
 export function calculateFirstReviewApprovalRate(
   events: readonly NormalizedEvent[],
   period: MetricsPeriod,
@@ -112,25 +123,26 @@ export function calculateFirstReviewApprovalRate(
   const pullRequests = pullRequestsCreatedInPeriod(events, parsed);
   if (pullRequests.size === 0) return 0;
 
-  const firstReviews = new Map<string, NormalizedEvent>();
-  const reviews = events
+  const firstDecisions = new Map<string, ReviewDecision>();
+  const decisions = events
     .filter(
       (event) =>
-        event.type === 'review_submitted' &&
+        parseReviewDecision(event) !== null &&
         pullRequests.has(subjectKey(event)) &&
         Date.parse(event.timestamp) < parsed.end,
     )
     .toSorted((left, right) => left.timestamp.localeCompare(right.timestamp));
 
-  for (const review of reviews) {
-    const key = subjectKey(review);
-    if (!firstReviews.has(key)) firstReviews.set(key, review);
+  for (const event of decisions) {
+    const key = subjectKey(event);
+    const decision = parseReviewDecision(event);
+    if (!firstDecisions.has(key) && decision !== null) {
+      firstDecisions.set(key, decision);
+    }
   }
 
-  const approved = [...firstReviews.values()].filter(
-    (event) =>
-      event.type === 'review_submitted' &&
-      event.reviewState.toUpperCase() === 'APPROVED',
+  const approved = [...firstDecisions.values()].filter(
+    (decision) => decision === 'APPROVE',
   ).length;
   return approved / pullRequests.size;
 }
@@ -145,10 +157,9 @@ export function calculateAverageChangesRequested(
 
   const changesRequested = events.filter(
     (event) =>
-      event.type === 'review_submitted' &&
+      parseReviewDecision(event) === 'REQUEST_CHANGES' &&
       pullRequests.has(subjectKey(event)) &&
-      inPeriod(event, parsed) &&
-      event.reviewState.toUpperCase() === 'CHANGES_REQUESTED',
+      inPeriod(event, parsed),
   ).length;
 
   return changesRequested / pullRequests.size;
