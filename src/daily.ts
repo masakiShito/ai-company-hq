@@ -64,7 +64,10 @@ export function createTokyoDayPeriod(date: string): TokyoDayPeriod {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
-function inPeriod(event: NormalizedEvent, period: TokyoDayPeriod): boolean {
+export function inPeriod(
+  event: NormalizedEvent,
+  period: TokyoDayPeriod,
+): boolean {
   const timestamp = Date.parse(event.timestamp);
   return (
     timestamp >= Date.parse(period.start) && timestamp < Date.parse(period.end)
@@ -89,6 +92,7 @@ function describeEvent(event: NormalizedEvent): string {
 
 export function buildEmployeeActivities(
   events: readonly NormalizedEvent[],
+  noActivitySummary = '本日の活動なし',
 ): EmployeeActivity[] {
   return EMPLOYEES.map((employee) => {
     const summaries = events
@@ -97,12 +101,13 @@ export function buildEmployeeActivities(
 
     return {
       ...employee,
-      summary: summaries.length === 0 ? '本日の活動なし' : summaries.join('\n'),
+      summary:
+        summaries.length === 0 ? noActivitySummary : summaries.join('\n'),
     };
   });
 }
 
-function referencesFor(
+export function referencesFor(
   events: readonly NormalizedEvent[],
   subject: NormalizedEvent['subject'],
 ): Facts['issues'] {
@@ -119,7 +124,7 @@ function referencesFor(
   return [...references.values()];
 }
 
-async function collectRepository(
+export async function collectRepository(
   repository: string,
   fetcher: GitHubFetcher,
 ): Promise<NormalizedEvent[]> {
