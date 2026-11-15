@@ -94,6 +94,7 @@ describe('daily CLI E2E', () => {
       JSON.stringify({
         name: 'Test Company',
         timezone: 'Asia/Tokyo',
+        autonomousSince: '2026-11-08T00:00:00Z',
         repos: [repository],
       }),
       'utf8',
@@ -150,6 +151,13 @@ describe('daily CLI E2E', () => {
     expect(facts.period).toEqual({ kind: 'daily', date: '2026-11-07' });
     expect(facts.issues.map(({ number }) => number)).toEqual([7]);
     expect(facts.pullRequests.map(({ number }) => number)).toEqual([9]);
+    expect(facts.eventCandidates).toContainEqual(
+      expect.objectContaining({
+        kind: 'pull_request_merged',
+        number: 9,
+        speaker: 'president',
+      }),
+    );
   });
 
   it('returns exit code 1 on repeated report validation failure', async () => {

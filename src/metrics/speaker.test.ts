@@ -71,6 +71,28 @@ describe('classifySpeaker', () => {
   });
 
   it.each([
+    ['president', '2026-05-01T00:00:00Z', '2026-05-02T00:00:00Z'],
+    ['pm', '2026-05-02T00:00:00Z', '2026-05-02T00:00:00Z'],
+    ['pm', '2026-05-03T00:00:00Z', '2026-05-02T00:00:00Z'],
+    ['pm', '2026-05-01T00:00:00Z', undefined],
+  ] as const)(
+    'classifies a merged PR as %s when merged at %s and autonomousSince is %s',
+    (expected, timestamp, autonomousSince) => {
+      expect(
+        classifySpeaker(
+          {
+            ...common,
+            type: 'pr_merged',
+            subject: 'pull_request',
+            timestamp,
+          },
+          autonomousSince,
+        ),
+      ).toBe(expected);
+    },
+  );
+
+  it.each([
     [
       'reviewer',
       {

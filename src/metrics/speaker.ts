@@ -22,7 +22,10 @@ export function parseActorMarker(
  * Events that do not represent one of the explicitly known author contexts
  * intentionally fall back to the organization.
  */
-export function classifySpeaker(event: NormalizedEvent): SpeakerRole {
+export function classifySpeaker(
+  event: NormalizedEvent,
+  autonomousSince?: string,
+): SpeakerRole {
   if ('body' in event && event.body !== undefined) {
     const markedActor = parseActorMarker(event.body);
     if (markedActor !== null) return markedActor;
@@ -49,6 +52,13 @@ export function classifySpeaker(event: NormalizedEvent): SpeakerRole {
 
   if (event.type === 'issue_created') {
     return 'pm';
+  }
+
+  if (event.type === 'pr_merged') {
+    return autonomousSince !== undefined &&
+      Date.parse(event.timestamp) < Date.parse(autonomousSince)
+      ? 'president'
+      : 'pm';
   }
 
   return 'organization';
