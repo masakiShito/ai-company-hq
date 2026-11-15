@@ -41,6 +41,7 @@ export const FactsMetricsSchema = z
   .strict();
 
 export const SpeakerRoleSchema = z.enum([
+  'president',
   'reviewer',
   'engineer',
   'pm',

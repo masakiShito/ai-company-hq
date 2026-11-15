@@ -23,6 +23,7 @@ const pullRequest = {
   closed_at: '2026-11-03T00:00:00Z',
   merged_at: '2026-11-03T00:00:00Z',
   user: { login: 'bob' },
+  head: { ref: 'feat/pull-request' },
   labels: [],
 };
 

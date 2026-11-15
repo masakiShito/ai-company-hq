@@ -40,6 +40,7 @@ const githubCases = [
       merged_at: '2026-05-02T00:00:00+09:00',
       user: { login: 'bob' },
       merged_by: { login: 'alice' },
+      head: { ref: 'feat/reporting' },
       labels: [],
     },
   },
@@ -106,6 +107,7 @@ const normalizedEvents = [
     type: 'pr_created',
     subject: 'pull_request',
     body: 'Pull request details',
+    headRefName: 'feat/reporting',
   },
   { ...commonEvent, type: 'pr_merged', subject: 'pull_request' },
   {

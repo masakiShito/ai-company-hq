@@ -1,6 +1,7 @@
 import type { NormalizedEvent } from '../collect/schemas.js';
 
-export type SpeakerRole = 'reviewer' | 'engineer' | 'pm' | 'organization';
+export type SpeakerRole =
+  'president' | 'reviewer' | 'engineer' | 'pm' | 'organization';
 
 const ACTOR_MARKER_PATTERN =
   /<!-- ai-company:actor=(pm|engineer|reviewer) -->\s*$/;
@@ -22,6 +23,19 @@ export function parseActorMarker(
  * intentionally fall back to the organization.
  */
 export function classifySpeaker(event: NormalizedEvent): SpeakerRole {
+  if ('body' in event && event.body !== undefined) {
+    const markedActor = parseActorMarker(event.body);
+    if (markedActor !== null) return markedActor;
+  }
+
+  if (event.type === 'pr_created' && event.headRefName.startsWith('chore/')) {
+    return 'president';
+  }
+
+  if (event.type === 'comment_added' && event.body.startsWith('判定:')) {
+    return 'reviewer';
+  }
+
   if (
     event.type === 'review_submitted' ||
     (event.type === 'comment_added' && event.commentKind === 'review')
