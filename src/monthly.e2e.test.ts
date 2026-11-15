@@ -43,6 +43,7 @@ const pullRequests = [
     merged_at: '2026-11-11T03:00:00Z',
     user: { login: 'engineer' },
     merged_by: { login: 'president' },
+    head: { ref: 'feat/monthly-cli' },
     labels: [],
   },
 ];

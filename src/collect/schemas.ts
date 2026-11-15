@@ -43,6 +43,11 @@ export const GitHubPullRequestSchema = z
     merged_at: GitHubTimestampSchema.nullable(),
     user: GitHubUserSchema,
     merged_by: GitHubUserSchema.optional(),
+    head: z
+      .object({
+        ref: z.string().min(1),
+      })
+      .passthrough(),
     labels: z.array(z.union([GitHubLabelSchema, z.string()])),
   })
   .passthrough();
@@ -105,6 +110,7 @@ export const NormalizedEventSchema = z.union([
     type: z.literal('pr_created'),
     subject: z.literal('pull_request'),
     body: z.string().optional(),
+    headRefName: z.string().min(1),
   }),
   EventCommonSchema.extend({
     type: z.literal('pr_merged'),
@@ -140,8 +146,6 @@ export type GitHubIssue = z.infer<typeof GitHubIssueSchema>;
 export type GitHubPullRequest = z.infer<typeof GitHubPullRequestSchema>;
 export type GitHubIssueComment = z.infer<typeof GitHubIssueCommentSchema>;
 export type GitHubReview = z.infer<typeof GitHubReviewSchema>;
-export type GitHubReviewComment = z.infer<
-  typeof GitHubReviewCommentSchema
->;
+export type GitHubReviewComment = z.infer<typeof GitHubReviewCommentSchema>;
 export type GitHubTimelineEvent = z.infer<typeof GitHubTimelineEventSchema>;
 export type NormalizedEvent = z.infer<typeof NormalizedEventSchema>;

@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 
 import { buildFacts, type BuildFactsInput } from './builder.js';
 import { outputFactsForDryRun } from './dry-run.js';
-import { FactsSchema } from './schema.js';
+import { FactsSchema, SpeakerRoleSchema } from './schema.js';
 
 const validInput = {
   period: { kind: 'daily', date: '2026-11-07' } as const,
@@ -63,6 +63,10 @@ const validInput = {
 } satisfies BuildFactsInput;
 
 describe('buildFacts', () => {
+  it('accepts president as a speaker role', () => {
+    expect(SpeakerRoleSchema.parse('president')).toBe('president');
+  });
+
   it('builds facts from metrics output and related factual records', () => {
     const facts = buildFacts(validInput);
 

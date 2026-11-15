@@ -120,6 +120,7 @@ export function normalizeGitHubData(
       ...subject,
       type: 'pr_created',
       body: pullRequest.body ?? '',
+      headRefName: pullRequest.head.ref,
     });
 
     if (pullRequest.merged_at !== null) {

@@ -34,6 +34,42 @@ describe('parseActorMarker', () => {
 });
 
 describe('classifySpeaker', () => {
+  it('uses an actor marker before all other rules', () => {
+    expect(
+      classifySpeaker({
+        ...common,
+        type: 'pr_created',
+        subject: 'pull_request',
+        body: '<!-- ai-company:actor=pm -->',
+        headRefName: 'chore/update-settings',
+      }),
+    ).toBe('pm');
+  });
+
+  it('classifies a PR from a chore branch as the president', () => {
+    expect(
+      classifySpeaker({
+        ...common,
+        type: 'pr_created',
+        subject: 'pull_request',
+        body: '',
+        headRefName: 'chore/update-settings',
+      }),
+    ).toBe('president');
+  });
+
+  it('classifies a comment whose first line starts with 判定: as the reviewer', () => {
+    expect(
+      classifySpeaker({
+        ...common,
+        type: 'comment_added',
+        subject: 'issue',
+        commentKind: 'issue',
+        body: '判定: 修正が必要\n詳細',
+      }),
+    ).toBe('reviewer');
+  });
+
   it.each([
     [
       'reviewer',
@@ -55,7 +91,15 @@ describe('classifySpeaker', () => {
         body: 'Inline comment',
       },
     ],
-    ['engineer', { ...common, type: 'pr_created', subject: 'pull_request' }],
+    [
+      'engineer',
+      {
+        ...common,
+        type: 'pr_created',
+        subject: 'pull_request',
+        headRefName: 'feat/reporting',
+      },
+    ],
     ['pm', { ...common, type: 'issue_created', subject: 'issue' }],
     [
       'organization',

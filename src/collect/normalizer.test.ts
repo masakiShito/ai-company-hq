@@ -30,6 +30,7 @@ function rawData(): GitHubRawData {
         merged_at: '2026-11-08T00:00:00Z',
         user: { login: 'carol' },
         merged_by: { login: 'dave' },
+        head: { ref: 'feat/add-feature' },
         labels: [],
       },
     ],
@@ -119,6 +120,7 @@ describe('normalizeGitHubData', () => {
       expect.objectContaining({
         type: 'pr_created',
         body: 'Feature details <!-- ai-company:actor=engineer -->',
+        headRefName: 'feat/add-feature',
       }),
     );
     expect(events).toContainEqual(
