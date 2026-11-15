@@ -4,6 +4,7 @@ import { promisify } from 'node:util';
 import type { Facts } from '../facts/index.js';
 
 import type { Character, CharacterRole } from './characters.js';
+import { generateVerifiedReport } from './verify.js';
 
 const execFileAsync = promisify(execFile);
 const MONTHLY_METRICS_TABLE_MARKER = '<!-- MONTHLY_METRICS_TABLE -->';
@@ -255,7 +256,11 @@ export async function writeDailyReport(
   characters: readonly Character[],
   claude: ClaudeClient,
 ): Promise<string> {
-  return claude.generate(buildDailyPrompt(facts, characters));
+  return generateVerifiedReport(
+    buildDailyPrompt(facts, characters),
+    facts,
+    claude,
+  );
 }
 
 /** Generates a monthly newsletter and inserts its deterministic metrics table. */
@@ -264,6 +269,10 @@ export async function writeMonthlyReport(
   characters: readonly Character[],
   claude: ClaudeClient,
 ): Promise<string> {
-  const report = await claude.generate(buildMonthlyPrompt(facts, characters));
+  const report = await generateVerifiedReport(
+    buildMonthlyPrompt(facts, characters),
+    facts,
+    claude,
+  );
   return insertMonthlyMetricsTable(report, facts);
 }
