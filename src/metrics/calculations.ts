@@ -144,7 +144,7 @@ export function calculateFirstReviewApprovalRate(
   const approved = [...firstDecisions.values()].filter(
     (decision) => decision === 'APPROVE',
   ).length;
-  return approved / pullRequests.size;
+  return firstDecisions.size === 0 ? 0 : approved / firstDecisions.size;
 }
 
 export function calculateAverageChangesRequested(

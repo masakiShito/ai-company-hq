@@ -113,7 +113,7 @@ describe('event counts', () => {
 });
 
 describe('calculateFirstReviewApprovalRate', () => {
-  it('counts PRs approved in their first decision comment', () => {
+  it('calculates the rate using only PRs with decision comments', () => {
     const events = [
       event('pr_created', 1, '2026-05-01T00:00:00Z'),
       event('pr_created', 2, '2026-05-01T00:00:00Z'),
@@ -125,8 +125,17 @@ describe('calculateFirstReviewApprovalRate', () => {
       comment(3, '2026-05-03T00:00:00Z', 'Review complete\n判定: APPROVE'),
     ];
 
-    expect(calculateFirstReviewApprovalRate(events, period)).toBe(1 / 3);
-    expect(calculateFirstReviewApprovalRate([], period)).toBe(0);
+    expect(calculateFirstReviewApprovalRate(events, period)).toBe(1 / 2);
+  });
+
+  it('returns zero when no PR has a decision comment', () => {
+    const events = [
+      event('pr_created', 1, '2026-05-01T00:00:00Z'),
+      review(1, '2026-05-02T00:00:00Z', 'APPROVED'),
+      comment(1, '2026-05-03T00:00:00Z', 'Review complete\n判定: APPROVE'),
+    ];
+
+    expect(calculateFirstReviewApprovalRate(events, period)).toBe(0);
   });
 });
 
